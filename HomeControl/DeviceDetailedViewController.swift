@@ -17,8 +17,13 @@ class DeviceDetailedViewController: UIViewController {
     @IBOutlet weak var relaySwitch: UISwitch!
     @IBAction func relaySwitchStateChange(_ sender: Any) {
         print(self.relaySwitch.isOn)
+        NetworkManager.shared().databaseRef.child("/Devices/\(deviceID)/isSwitchStateOn").setValue(self.relaySwitch.isOn)
     }
     
+    let editBarButton = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(editDevice))
+    let updateBarButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(refreshDevice))
+    
+    var deviceID: String = ""
     var currentDevice: Device! {
         didSet {
             self.view.layoutIfNeeded()
@@ -32,9 +37,8 @@ class DeviceDetailedViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.deviceID = currentDevice.id
         
-        let editBarButton = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(self.editDevice))
-        let updateBarButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshDevice))
         self.navigationItem.rightBarButtonItems = [editBarButton, updateBarButton]
 
         // Do any additional setup after loading the view.
@@ -42,10 +46,20 @@ class DeviceDetailedViewController: UIViewController {
     
     @objc private func editDevice() {
         deviceNameTextField.isEnabled = !deviceNameTextField.isEnabled
+        
+//        NetworkManager.shared().databaseRef.child("Devices").child(deviceID).setValue(["DeviceName": self.deviceNameTextField.text!])
+        NetworkManager.shared().databaseRef.child("/Devices/\(deviceID)/isSwitchStateOn").setValue(self.relaySwitch.isOn)
     }
     @objc private func refreshDevice() {
         print("refreshed")
-        
+        NetworkManager.shared().databaseRef.child("Devices").child(deviceID).observeSingleEvent(of: .value, with: { (snapshot) in
+            
+            guard let device = NetworkManager.parseDeviceFrom(snapshot: snapshot) else { return }
+            self.currentDevice = device
+            
+        }) { (error) in
+            print(error.localizedDescription)
+        }
     }
     
 }

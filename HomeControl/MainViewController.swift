@@ -31,15 +31,17 @@ class MainViewController: UIViewController {
 //            print(error.localizedDescription)
 //        }
         
-        self.databaseRef.child("Devices").observeSingleEvent(of: .value, with: { (snapshot) in
-            self.devices = NetworkManager.parseDevicesFrom(snapshot: snapshot)
-            self.devicesTableView.reloadData()
-        }) { (error) in
-            print(error.localizedDescription)
-        }
+//        self.databaseRef.child("Devices").observeSingleEvent(of: .value, with: { (snapshot) in
+//            self.devices = NetworkManager.parseDevicesFrom(snapshot: snapshot)
+//            self.devicesTableView.reloadData()
+//        }) { (error) in
+//            print(error.localizedDescription)
+//        }
+        
+        self.refreshTableView()
         
         let addBarButton = UIBarButtonItem(barButtonSystemItem: .add, target: nil, action: nil)
-        let refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: nil)
+        let refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshTableView))
         self.navigationItem.rightBarButtonItems = [addBarButton, refreshButton]
     }
 
@@ -49,6 +51,15 @@ class MainViewController: UIViewController {
         guard let deviceDetailedViewController = self.storyboard?.instantiateViewController(withIdentifier: "DeviceDetailedViewController") as? DeviceDetailedViewController else { return }
         deviceDetailedViewController.currentDevice = device
         self.navigationController?.pushViewController(deviceDetailedViewController, animated: true)
+    }
+    
+    @objc func refreshTableView() {
+        self.databaseRef.child("Devices").observeSingleEvent(of: .value, with: { (snapshot) in
+            self.devices = NetworkManager.parseDevicesFrom(snapshot: snapshot)
+            self.devicesTableView.reloadData()
+        }) { (error) in
+            print(error.localizedDescription)
+        }
     }
 
 }
@@ -135,7 +146,9 @@ class NetworkManager {
         guard let snapshot = snapshot as? DataSnapshot else { return [Device]() }
         for device in snapshot.children {
             if let device = device as? DataSnapshot {
-                devices.append(NetworkManager.parseDeviceFrom(snapshot: device)!)
+                if let deviceStrong = NetworkManager.parseDeviceFrom(snapshot: device) {
+                    devices.append(deviceStrong)
+                }
             }
         }
         return devices
