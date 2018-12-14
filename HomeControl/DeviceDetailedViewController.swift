@@ -10,21 +10,42 @@ import UIKit
 
 class DeviceDetailedViewController: UIViewController {
 
+    @IBOutlet weak var activeStatusLabel: UILabel!
+    @IBOutlet weak var deviceNameTextField: UITextField!
+    @IBOutlet weak var temperatureLabel: UILabel!
+    @IBOutlet weak var humidityLabel: UILabel!
+    @IBOutlet weak var relaySwitch: UISwitch!
+    @IBAction func relaySwitchStateChange(_ sender: Any) {
+        print(self.relaySwitch.isOn)
+    }
+    
+    var currentDevice: Device! {
+        didSet {
+            self.view.layoutIfNeeded()
+            self.activeStatusLabel.text = currentDevice.isActive == true ? "Status: Active" : "Status: Disabled"
+            self.deviceNameTextField.text = currentDevice.name
+            self.temperatureLabel.text = String(currentDevice.currentTemperature)
+            self.humidityLabel.text = String(currentDevice.currentHumidity)
+            self.relaySwitch.isOn = currentDevice.isSwitchedOn
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let editBarButton = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(self.editDevice))
+        let updateBarButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshDevice))
+        self.navigationItem.rightBarButtonItems = [editBarButton, updateBarButton]
 
         // Do any additional setup after loading the view.
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    @objc private func editDevice() {
+        deviceNameTextField.isEnabled = !deviceNameTextField.isEnabled
     }
-    */
-
+    @objc private func refreshDevice() {
+        print("refreshed")
+        
+    }
+    
 }
