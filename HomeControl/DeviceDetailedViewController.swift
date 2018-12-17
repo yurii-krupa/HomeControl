@@ -20,8 +20,7 @@ class DeviceDetailedViewController: UIViewController {
         NetworkManager.shared().databaseRef.child("/Devices/\(deviceID)/isSwitchStateOn").setValue(self.relaySwitch.isOn)
     }
     
-    let editBarButton = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(editDevice))
-    let updateBarButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(refreshDevice))
+    
     
     var deviceID: String = ""
     var currentDevice: Device! {
@@ -39,18 +38,21 @@ class DeviceDetailedViewController: UIViewController {
         super.viewDidLoad()
         self.deviceID = currentDevice.id
         
+        let editBarButton = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(self.editDevice))
+        let updateBarButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(self.refreshDevice))
+        
         self.navigationItem.rightBarButtonItems = [editBarButton, updateBarButton]
 
         // Do any additional setup after loading the view.
     }
     
-    @objc private func editDevice() {
+    @objc func editDevice() {
         deviceNameTextField.isEnabled = !deviceNameTextField.isEnabled
         
-//        NetworkManager.shared().databaseRef.child("Devices").child(deviceID).setValue(["DeviceName": self.deviceNameTextField.text!])
-        NetworkManager.shared().databaseRef.child("/Devices/\(deviceID)/isSwitchStateOn").setValue(self.relaySwitch.isOn)
+        NetworkManager.shared().databaseRef.child("Devices").child(deviceID).updateChildValues(["DeviceName": self.deviceNameTextField.text!])
+//        NetworkManager.shared().databaseRef.child("/Devices/\(deviceID)/isSwitchStateOn").setValue(self.relaySwitch.isOn)
     }
-    @objc private func refreshDevice() {
+    @objc func refreshDevice() {
         print("refreshed")
         NetworkManager.shared().databaseRef.child("Devices").child(deviceID).observeSingleEvent(of: .value, with: { (snapshot) in
             

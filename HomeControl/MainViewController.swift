@@ -45,7 +45,9 @@ class MainViewController: UIViewController {
         self.navigationItem.rightBarButtonItems = [addBarButton, refreshButton]
     }
 
-    
+    override func viewDidAppear(_ animated: Bool) {
+        self.refreshTableView()
+    }
     
     func snowDeviceDetailedViewController(device: Device) {
         guard let deviceDetailedViewController = self.storyboard?.instantiateViewController(withIdentifier: "DeviceDetailedViewController") as? DeviceDetailedViewController else { return }
